@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
-using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
+//using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 
 public class player : MonoBehaviour
 {
-    [SerializeField] private float dragSensitivity = 1.5f;
-    [SerializeField] private float _controllerSensitivity = 5f;
+    //[SerializeField] private float dragSensitivity = 1.5f;
+    //[SerializeField] private float _controllerSensitivity = 5f;
     public InputActionAsset inputActions;
 
     private InputAction moveAction;
@@ -26,7 +26,8 @@ public class player : MonoBehaviour
     public float attackRange = 0.5f;
     public LayerMask enemyLayer;
 
-    public bool canCombo;
+    public int comboStep;
+    bool canCombo= true;
 
 
 
@@ -35,14 +36,14 @@ public class player : MonoBehaviour
     private void OnEnable()
     {
         inputActions.FindActionMap("Player").Enable();
-        EnhancedTouchSupport.Enable();
+        //EnhancedTouchSupport.Enable();
 
     }
 
     private void OnDisable()
     {
         inputActions.FindActionMap("Player").Disable();
-        EnhancedTouchSupport.Disable();
+        //EnhancedTouchSupport.Disable();
     }
 
     private void Awake()
@@ -69,40 +70,41 @@ public class player : MonoBehaviour
         moveAmount = moveAction.ReadValue<Vector2>();
         lookAmount = lookAction.ReadValue<Vector2>();
 
-        PlayerRun();
+        //PlayerRun();
         PlayerAttackControl();
 
 
 
 
 
-        // Movement always from stick
-        moveAmount = moveAction.ReadValue<Vector2>();
 
-        // Start with look from stick (mouse/gamepad/on-screen right stick)
-        Vector2 lookFromStick = lookAction.ReadValue<Vector2>();
+        //// Movement always from stick
+        //moveAmount = moveAction.ReadValue<Vector2>();
 
-        // Merge drag look
-        Vector2 lookFromDrag = Vector2.zero;
-        foreach (var touch in Touch.activeTouches)
-        {
-            if (touch.screenPosition.x > Screen.width / 2) // only right side
-            {
-                lookFromDrag = touch.delta * dragSensitivity * Time.deltaTime;
-                break; // first touch on right side is enough
-            }
+        //// Start with look from stick (mouse/gamepad/on-screen right stick)
+        //Vector2 lookFromStick = lookAction.ReadValue<Vector2>();
 
-            // Final look = stick + drag
-            lookAmount = lookFromStick + lookFromDrag;
-        }
+        //// Merge drag look
+        //Vector2 lookFromDrag = Vector2.zero;
+        //foreach (var touch in Touch.activeTouches)
+        //{
+        //    if (touch.screenPosition.x > Screen.width / 2) // only right side
+        //    {
+        //        lookFromDrag = touch.delta * dragSensitivity * Time.deltaTime;
+        //        break; // first touch on right side is enough
+        //    }
+
+        //    // Final look = stick + drag
+        //    lookAmount = lookFromStick + lookFromDrag;
+        //}
 
     }
 
     private void FixedUpdate()
     {
         Walking();
-        LookRotationHorizontal();
-        Debug.Log("Reading");
+        //LookRotationHorizontal();
+        //Debug.Log("Reading");
     }
 
     private void Walking()
@@ -113,25 +115,25 @@ public class player : MonoBehaviour
     }
 
 
-    private void LookRotationHorizontal()
-    {
-        float rotationAmount = lookAmount.x * _controllerSensitivity * Time.fixedDeltaTime;
-        Quaternion deltaRotation = Quaternion.Euler(0, rotationAmount, 0);
-        playerRB.MoveRotation(playerRB.rotation * deltaRotation);
-    }
+    //private void LookRotationHorizontal()
+    //{
+    //    float rotationAmount = lookAmount.x * _controllerSensitivity * Time.fixedDeltaTime;
+    //    Quaternion deltaRotation = Quaternion.Euler(0, rotationAmount, 0);
+    //    playerRB.MoveRotation(playerRB.rotation * deltaRotation);
+    //}
 
-    public void PlayerRun()
-    {
-        if (moveAmount.y > 0)
-        {
-            playerAnim.SetFloat("vertical", 1);
-        }
-        if (moveAmount.y == 0)
-        {
-            playerAnim.SetFloat("vertical", 0);
-        }
+    //public void PlayerRun()
+    //{
+    //    if (moveAmount.y > 0)
+    //    {
+    //        playerAnim.SetFloat("vertical", 1);
+    //    }
+    //    if (moveAmount.y == 0)
+    //    {
+    //        playerAnim.SetFloat("vertical", 0);
+    //    }
 
-    }
+    //}
 
     private void PlayerAttackControl()
     {
@@ -139,6 +141,17 @@ public class player : MonoBehaviour
         {
             playerAnim.SetTrigger("isattacking");
             Attack();
+            if(comboStep == 0)
+            {
+                playerAnim.SetTrigger("Attack1");
+                comboStep = 1;
+            }
+            else if (comboStep == 1 && canCombo)
+            {
+                playerAnim.SetTrigger("Attack2");
+                comboStep = 0;
+            }
+           
 
 
         }
